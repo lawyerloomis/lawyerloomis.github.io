@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Admin | The Loomis Firm</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="../images/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/admin.css">
+  <script>document.documentElement.classList.add('js')</script>
+</head>
+<body class="admin-body" data-page="admin">
+
+<p class="admin-loading" id="loading">Loading&hellip;</p>
+
+<!-- ============ Sign in ============ -->
+<main class="login" id="login" hidden>
+  <div class="login-card">
+    <img src="../images/emblem.png" width="72" height="72" alt="">
+    <h1>Loomis Firm admin</h1>
+    <p class="login-note" id="login-note">Sign in to read messages and update the website.</p>
+
+    <form class="form" id="login-form">
+      <div class="field">
+        <label for="l-email">Email</label>
+        <input id="l-email" type="email" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <label for="l-pass">Password</label>
+        <input id="l-pass" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn btn-leather leather stitched" type="submit">Sign in</button>
+      <p class="form-status" id="login-status" role="status" aria-live="polite"></p>
+      <button class="text-btn" type="button" id="forgot">Forgot your password?</button>
+    </form>
+
+    <div class="setup-note" id="setup-note" hidden>
+      <p><strong>Firebase isn&rsquo;t connected yet.</strong> Once the Firebase settings are added to the website, this page signs in to the real admin portal.</p>
+      <p>Until then you can try everything in demo mode. Nothing you do in the demo reaches the live website.</p>
+      <button class="btn btn-brass stitched" type="button" id="try-demo">Try the demo</button>
+    </div>
+
+    <p class="login-back"><a class="link-gold" href="../">Back to the website</a></p>
+  </div>
+</main>
+
+<!-- ============ Portal ============ -->
+<div class="admin-app" id="app" hidden>
+  <header class="admin-top">
+    <div class="admin-top-row">
+      <a class="admin-brand" href="../admin/"><img src="../images/emblem.png" width="40" height="40" alt=""><span><span class="brand-long">Loomis Firm </span><b>admin</b></span></a>
+      <div class="admin-top-links">
+        <a class="link-gold" href="../" target="_blank" rel="noopener">View website</a>
+        <button class="text-btn" type="button" id="sign-out">Sign out</button>
+      </div>
+    </div>
+    <nav class="admin-tabs" role="tablist" aria-label="Admin sections">
+      <button role="tab" type="button" data-tab="messages" id="tab-messages" aria-controls="panel-messages">Messages <span class="badge" id="unread-badge" hidden></span></button>
+      <button role="tab" type="button" data-tab="posts" id="tab-posts" aria-controls="panel-posts">Posts</button>
+      <button role="tab" type="button" data-tab="motd" id="tab-motd" aria-controls="panel-motd">Message of the day</button>
+      <button role="tab" type="button" data-tab="text" id="tab-text" aria-controls="panel-text">Page text</button>
+      <button role="tab" type="button" data-tab="account" id="tab-account" aria-controls="panel-account">Account</button>
+    </nav>
+  </header>
+
+  <div class="demo-banner" id="demo-banner" hidden>
+    <p>Demo mode. Changes are saved only in this browser and don&rsquo;t reach the live website.</p>
+    <button class="text-btn" type="button" id="reset-demo">Start the demo over</button>
+    <button class="text-btn" type="button" id="leave-demo">Leave demo</button>
+  </div>
+
+  <main class="admin-main">
+
+    <!-- Messages -->
+    <section class="panel" data-panel="messages" id="panel-messages" role="tabpanel" aria-labelledby="tab-messages">
+      <div class="panel-head">
+        <div>
+          <h1>Messages</h1>
+          <p class="panel-lede">Everything sent through the website&rsquo;s contact form.</p>
+        </div>
+        <div class="seg" role="group" aria-label="Show">
+          <button type="button" data-filter="all" aria-pressed="true">All</button>
+          <button type="button" data-filter="unread" aria-pressed="false">Unread</button>
+        </div>
+      </div>
+      <div class="msg-list" id="msg-list"></div>
+    </section>
+
+    <!-- Posts -->
+    <section class="panel" data-panel="posts" id="panel-posts" role="tabpanel" aria-labelledby="tab-posts" hidden>
+      <div id="post-index">
+        <div class="panel-head">
+          <div>
+            <h1>Posts</h1>
+            <p class="panel-lede">Updates, news and blog articles. Choose a style and where each one appears.</p>
+          </div>
+          <button class="btn btn-leather leather stitched" type="button" id="new-post">New post</button>
+        </div>
+        <div class="post-rows" id="post-rows"></div>
+      </div>
+
+      <div class="editor" id="editor" hidden>
+        <div class="editor-top">
+          <button class="text-btn back" type="button" id="ed-back">All posts</button>
+          <p class="pill" id="ed-pill"></p>
+        </div>
+        <div class="editor-grid">
+          <div class="editor-form">
+            <div class="field">
+              <label for="ed-title">Title</label>
+              <input id="ed-title" type="text" maxlength="200" placeholder="For example: Our office will close early Friday">
+            </div>
+
+            <div class="field">
+              <span class="label" id="ed-body-label">Text</span>
+              <div class="rte">
+                <div class="rte-bar" role="toolbar" aria-label="Text formatting">
+                  <button type="button" data-cmd="bold" title="Bold" aria-label="Bold"><b>B</b></button>
+                  <button type="button" data-cmd="italic" title="Italic" aria-label="Italic"><i>I</i></button>
+                  <button type="button" data-cmd="h2" title="Heading">Heading</button>
+                  <button type="button" data-cmd="h3" title="Smaller heading">Subheading</button>
+                  <button type="button" data-cmd="insertUnorderedList" title="Bulleted list" aria-label="Bulleted list"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="4" cy="5" r="1.6"/><circle cx="4" cy="10" r="1.6"/><circle cx="4" cy="15" r="1.6"/><path d="M8 5h9M8 10h9M8 15h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+                  <button type="button" data-cmd="insertOrderedList" title="Numbered list" aria-label="Numbered list"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><text x="1" y="7.5" font-size="6.5" font-family="sans-serif">1</text><text x="1" y="13" font-size="6.5" font-family="sans-serif">2</text><text x="1" y="18.5" font-size="6.5" font-family="sans-serif">3</text><path d="M8 5h9M8 10h9M8 15h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+                  <button type="button" data-cmd="blockquote" title="Quote">Quote</button>
+                  <button type="button" data-cmd="link" title="Link">Link</button>
+                  <button type="button" data-cmd="clear" title="Plain text">Plain</button>
+                </div>
+                <div class="rte-link" id="rte-link" hidden>
+                  <label for="rte-url">Web address</label>
+                  <input id="rte-url" type="url" placeholder="https://">
+                  <button class="btn-outline" type="button" id="rte-link-ok">Add link</button>
+                  <button class="text-btn" type="button" id="rte-link-cancel">Cancel</button>
+                </div>
+                <div class="rte-area post-body" id="ed-body" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="ed-body-label" data-placeholder="Write the post here. Select words to make them bold, add a heading, or turn them into a list."></div>
+              </div>
+            </div>
+
+            <fieldset class="field">
+              <legend>Photos</legend>
+              <div class="photo-grid" id="ed-photos"></div>
+              <label class="btn-outline add-photos" for="ed-file">Add photos</label>
+              <input class="visually-hidden" id="ed-file" type="file" accept="image/*" multiple>
+              <p class="hint">The first photo is the main one. Photos are resized automatically, so straight from your phone is fine.</p>
+            </fieldset>
+
+            <fieldset class="field">
+              <legend>Style</legend>
+              <div class="style-pick">
+                <label class="style-opt"><input type="radio" name="ed-style" value="card" checked>
+                  <span class="style-art art-card" aria-hidden="true"><i></i><b></b><b></b></span>
+                  <span class="style-name">Card</span><span class="style-desc">Photo on top with a short summary. Sits in a row with other cards.</span></label>
+                <label class="style-opt"><input type="radio" name="ed-style" value="feature">
+                  <span class="style-art art-feature" aria-hidden="true"><i></i><b></b><b></b></span>
+                  <span class="style-name">Feature</span><span class="style-desc">A large framed photo beside the text. Good for big news.</span></label>
+                <label class="style-opt"><input type="radio" name="ed-style" value="note">
+                  <span class="style-art art-note" aria-hidden="true"><b></b><b></b><b></b></span>
+                  <span class="style-name">Note</span><span class="style-desc">Text only, in a stitched box. Good for short announcements.</span></label>
+                <label class="style-opt"><input type="radio" name="ed-style" value="gallery">
+                  <span class="style-art art-gallery" aria-hidden="true"><i></i><i></i><i></i></span>
+                  <span class="style-name">Gallery</span><span class="style-desc">A grid of photos with a line of text.</span></label>
+              </div>
+            </fieldset>
+
+            <fieldset class="field">
+              <legend>Where it appears</legend>
+              <div class="checks">
+                <label class="check"><input type="checkbox" name="ed-place" value="home"> Home page <span>(News from the firm)</span></label>
+                <label class="check"><input type="checkbox" name="ed-place" value="blog"> Blog</label>
+                <label class="check"><input type="checkbox" name="ed-place" value="about"> About page</label>
+                <label class="check"><input type="checkbox" name="ed-place" value="contact"> Contact page</label>
+              </div>
+            </fieldset>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="ed-date">Date shown on the post</label>
+                <input id="ed-date" type="date">
+              </div>
+              <label class="check pin"><input type="checkbox" id="ed-pinned"> Pin it to the top</label>
+            </div>
+
+            <div class="danger-zone"><button class="text-btn danger" type="button" id="ed-delete">Delete this post</button></div>
+          </div>
+
+          <aside class="editor-preview" aria-label="Preview">
+            <div class="preview-head">
+              <span>Preview</span>
+              <div class="seg small" role="group" aria-label="Preview as">
+                <button type="button" data-preview="list" aria-pressed="true">In a list</button>
+                <button type="button" data-preview="full" aria-pressed="false">Full post</button>
+              </div>
+            </div>
+            <div class="preview-frame" id="ed-preview"></div>
+          </aside>
+        </div>
+
+        <div class="editor-actions">
+          <button class="btn btn-leather leather stitched" type="button" id="ed-publish">Publish</button>
+          <button class="btn-outline" type="button" id="ed-draft">Save as draft</button>
+          <p class="ed-status" id="ed-status" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Message of the day -->
+    <section class="panel" data-panel="motd" id="panel-motd" role="tabpanel" aria-labelledby="tab-motd" hidden>
+      <div class="panel-head">
+        <div>
+          <h1>Message of the day</h1>
+          <p class="panel-lede">A short message in a band across the top of the website.</p>
+        </div>
+      </div>
+      <div class="motd-grid">
+        <form class="form" id="motd-form">
+          <label class="switch"><input type="checkbox" id="m-on"><span class="switch-ui" aria-hidden="true"></span> Show the message on the website</label>
+          <div class="field">
+            <label for="m-text">Message</label>
+            <textarea id="m-text" maxlength="280" rows="3" placeholder="For example: Our office is closed Friday for the holiday."></textarea>
+            <span class="hint" id="m-count">0 of 280 characters</span>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="m-link">Button goes to</label>
+              <select id="m-link">
+                <option value="">No button</option>
+                <option value="contact/">Contact page</option>
+                <option value="blog/">Blog</option>
+                <option value="about/">About page</option>
+                <option value="services/">Services page</option>
+                <option value="tel:+18432990400">Phone call to the office</option>
+                <option value="custom">Another web address&hellip;</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="m-linktext">Button wording</label>
+              <input id="m-linktext" type="text" maxlength="60" placeholder="Book a consultation">
+            </div>
+          </div>
+          <div class="field" id="m-custom-wrap" hidden>
+            <label for="m-custom">Web address</label>
+            <input id="m-custom" type="url" placeholder="https://">
+          </div>
+          <fieldset class="field">
+            <legend>Style</legend>
+            <div class="swatches">
+              <label class="swatch"><input type="radio" name="m-style" value="ribbon" checked><span class="sw sw-ribbon"></span> Gold ribbon</label>
+              <label class="swatch"><input type="radio" name="m-style" value="leather"><span class="sw sw-leather"></span> Navy leather</label>
+              <label class="swatch"><input type="radio" name="m-style" value="quiet"><span class="sw sw-quiet"></span> Quiet</label>
+            </div>
+          </fieldset>
+          <div class="field-row">
+            <fieldset class="field">
+              <legend>Show it on</legend>
+              <label class="check"><input type="radio" name="m-where" value="home" checked> Home page only</label>
+              <label class="check"><input type="radio" name="m-where" value="all"> Every page</label>
+            </fieldset>
+            <div class="field">
+              <label for="m-until">Stop showing after</label>
+              <input id="m-until" type="date">
+              <span class="hint">Leave empty to keep it up until you turn it off.</span>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-leather leather stitched" type="submit">Save message</button>
+            <p class="form-status" id="m-status" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+        <div class="motd-preview">
+          <p class="preview-label">Preview</p>
+          <div class="preview-frame bleed" id="m-preview"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Page text -->
+    <section class="panel" data-panel="text" id="panel-text" role="tabpanel" aria-labelledby="tab-text" hidden>
+      <div class="panel-head">
+        <div>
+          <h1>Page text</h1>
+          <p class="panel-lede">Change any wording on the website right on the page itself.</p>
+        </div>
+      </div>
+      <ol class="how">
+        <li>Choose a page below. It opens in a new tab in editing mode.</li>
+        <li>Tap any outlined text and type your changes.</li>
+        <li>Tap <strong>Save</strong> in the bar at the bottom. Changes go live right away.</li>
+      </ol>
+      <div class="page-links" id="page-links"></div>
+      <div class="text-changes">
+        <h2>Text you&rsquo;ve changed</h2>
+        <p id="text-count">Nothing changed yet. The website is showing its original wording.</p>
+        <button class="text-btn danger" type="button" id="restore-all" hidden>Put every page back to the original wording</button>
+        <p class="form-status" id="text-status" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <!-- Account -->
+    <section class="panel" data-panel="account" id="panel-account" role="tabpanel" aria-labelledby="tab-account" hidden>
+      <div class="panel-head">
+        <div>
+          <h1>Account</h1>
+          <p class="panel-lede">Signed in as <strong id="who"></strong>.</p>
+        </div>
+      </div>
+      <form class="form narrow" id="pw-form">
+        <h2>Change your password</h2>
+        <div class="field"><label for="pw-now">Current password</label><input id="pw-now" type="password" autocomplete="current-password" required></div>
+        <div class="field"><label for="pw-new">New password</label><input id="pw-new" type="password" autocomplete="new-password" minlength="8" required><span class="hint">At least 8 characters.</span></div>
+        <div class="field"><label for="pw-again">New password again</label><input id="pw-again" type="password" autocomplete="new-password" minlength="8" required></div>
+        <div class="form-actions"><button class="btn btn-leather leather stitched" type="submit">Change password</button><p class="form-status" id="pw-status" role="status" aria-live="polite"></p></div>
+      </form>
+      <div class="help-box">
+        <h2>Good to know</h2>
+        <ul>
+          <li>New contact-form messages appear in <strong>Messages</strong> as soon as they&rsquo;re sent. Keep this page open, or check it each morning.</li>
+          <li>Posts marked <strong>Draft</strong> are only visible here. Nothing shows on the website until you publish.</li>
+          <li>Bookmark this page. It lives at the website&rsquo;s address followed by <strong>/admin</strong>.</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script type="module" src="../js/admin.js"></script>
+</body>
+</html>

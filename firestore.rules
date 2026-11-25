@@ -1,0 +1,55 @@
+rules_version = '2';
+
+// The Loomis Firm website. Paste this whole file into
+// Firebase console > Firestore Database > Rules, then tap Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Someone is an admin if a document with their user ID exists in the "admins" collection.
+    // Those documents are added by hand in the Firebase console, never from the website.
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Page text edits and the message of the day: everyone can read, only admins can change.
+    match /site/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Posts: visitors see published posts only.
+    match /posts/{postId} {
+      allow read: if resource.data.status == 'published' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Photos for posts.
+    match /media/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /mediaFull/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Contact form: anyone can send a message, only admins can read or change them.
+    match /messages/{msgId} {
+      allow create: if request.resource.data.keys().hasOnly(['name', 'phone', 'email', 'topic', 'message', 'read', 'createdAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() < 120
+        && request.resource.data.phone is string && request.resource.data.phone.size() < 40
+        && request.resource.data.email is string && request.resource.data.email.size() < 200
+        && request.resource.data.topic is string && request.resource.data.topic.size() < 100
+        && request.resource.data.message is string && request.resource.data.message.size() < 5000
+        && request.resource.data.read == false
+        && request.resource.data.createdAt == request.time;
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}
